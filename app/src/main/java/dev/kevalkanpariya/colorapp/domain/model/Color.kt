@@ -7,5 +7,7 @@ import androidx.room.PrimaryKey
 data class Color(
     val timestamp: String,
     val color: Int,
+    val isInSync: Boolean,
     @PrimaryKey val id: Int? = null
 )
+

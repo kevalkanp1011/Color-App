@@ -1,6 +1,7 @@
 package dev.kevalkanpariya.colorapp
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -51,7 +52,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun Screen(viewModel: ColorViewModel) {
     val state= viewModel.state.value
-    val syncState = viewModel.cardSync.value
+
     val hostState= remember { SnackbarHostState() }
 
 
@@ -69,19 +70,20 @@ fun Screen(viewModel: ColorViewModel) {
         }
     ) {
 
-        Content(state, syncState)
+        Content(viewModel, state)
     }
 }
 
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun Content(state: ColorsState, syncState: Int) {
+fun Content(viewModel: ColorViewModel, state: ColorsState) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
     ) {
-        TopBar(syncNo = syncState)
+        TopBar(viewModel = viewModel)
         LazyVerticalGrid(
             modifier = Modifier.padding(start = 15.dp, end = 15.dp, top = 12.dp),
             columns = GridCells.Fixed(2),
@@ -110,7 +112,7 @@ fun CardItem(color: Int, date: String) {
             modifier = Modifier
                 .padding(7.dp)) {
             Text(
-                text = "#${color.toString(16)}",
+                text = intColorToHex(color),
                 fontSize = 18.sp,
                 color = Color.White
             )
@@ -144,8 +146,11 @@ fun CardItem(color: Int, date: String) {
 
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TopBar(syncNo: Int) {
+fun TopBar(viewModel: ColorViewModel) {
+
+    val scope = rememberCoroutineScope()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -161,7 +166,12 @@ fun TopBar(syncNo: Int) {
         )
         Button(
             modifier = Modifier.width(70.dp),
-            onClick = { /*TODO*/ },
+            onClick = {
+                      scope.launch {
+                          Log.d("ONCLICKED", "SUCESS")
+                          viewModel.onEvent(UiEvent.Sync)
+                      }
+                      },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0XFFB6B9FF)
             ),
@@ -173,7 +183,7 @@ fun TopBar(syncNo: Int) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "$syncNo"
+                    text = "${viewModel.cardSync.value}"
                 )
                 Icon(
                     modifier = Modifier.size(25.dp),
@@ -199,7 +209,7 @@ fun FloatingActionButton(viewModel: ColorViewModel, hostState: SnackbarHostState
             scope.launch {
                 viewModel.onEvent(UiEvent.AddColor)
                 hostState.showSnackbar(
-                    message = "Note Added",
+                    message = "Color Added",
                 )
             }
         },
@@ -228,6 +238,15 @@ fun FloatingActionButton(viewModel: ColorViewModel, hostState: SnackbarHostState
         }
 
     }
+}
+
+fun intColorToHex(colorInt: Int): String {
+    val alpha = colorInt shr 24 and 0xFF
+    val red = colorInt shr 16 and 0xFF
+    val green = colorInt shr 8 and 0xFF
+    val blue = colorInt and 0xFF
+
+    return String.format("#%02x%02x%02x", red, green, blue)
 }
 
 

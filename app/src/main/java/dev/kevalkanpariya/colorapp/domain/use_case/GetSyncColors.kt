@@ -4,11 +4,11 @@ import dev.kevalkanpariya.colorapp.domain.model.Color
 import dev.kevalkanpariya.colorapp.domain.repository.ColorRepository
 import kotlinx.coroutines.flow.Flow
 
-class GetColors(
+class GetSyncColors(
     private val repository: ColorRepository
 ) {
-    suspend operator fun invoke(
-    ): Flow<List<Color>> {
-        return repository.getColors()
+
+    suspend operator fun invoke(isInSync: Boolean): Flow<List<Color>> {
+        return repository.getSyncColors(isInSync = isInSync)
     }
 }
